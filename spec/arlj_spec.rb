@@ -22,9 +22,20 @@ RSpec.describe Arlj do
   end
 
   before(:all) do
-    @parent = Parent.create(name: 'job')
-    (1..10).map do |n|
+    @parent = Parent.create(name: 'John')
+    (1..10).each do |n|
       @parent.children.create(col: n)
+    end
+
+    @parent_no_child = Parent.create(name: 'Jane')
+  end
+
+  describe '#arlj' do
+    it 'joins the other table' do
+      counts = Parent.arlj(:children).
+                      group('parents.id').
+                      pluck('COUNT(children.id)')
+      assert{ counts.sort == [0, 10] }
     end
   end
 
