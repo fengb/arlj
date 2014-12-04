@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-require 'arlj/left_joins'
+require 'arlj'
 
-RSpec.describe Arlj::LeftJoins do
+RSpec.describe Arlj, 'left_joins' do
   class LjParent < Parent
-    extend Arlj::LeftJoins
+    extend Arlj
   end
 
   specify '#left_joins does arlj stuff' do

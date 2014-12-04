@@ -37,7 +37,7 @@ ActiveRecord::Base.extend Arlj
 Then begin to left join!
 
 ```ruby
-puts Parent.arlj(:children).group('records.id').select('COUNT(children.id)').to_sql
+puts Parent.left_joins(:children).group('records.id').select('COUNT(children.id)').to_sql
 => SELECT COUNT(children.id)
      FROM "parents"
      LEFT OUTER JOIN "children"
@@ -45,12 +45,12 @@ puts Parent.arlj(:children).group('records.id').select('COUNT(children.id)').to_
     GROUP BY records.id
 ```
 
-`arlj` is purposely low level to be extra chainable.
+`left_joins` is purposely low level to be extra chainable.
 
-Arlj also adds an aggregation syntax:
+Arlj also adds an aggregation method:
 
 ```ruby
-Parent.arlj_aggregate(:children, 'COUNT(*)', 'SUM(col)' => 'total').select('children_count', 'total').to_sql
+Parent.left_joins_aggregate(:children, 'COUNT(*)', 'SUM(col)' => 'total').select('children_count', 'total').to_sql
 => SELECT children_count
         , total
      FROM "parents"
@@ -62,20 +62,18 @@ Parent.arlj_aggregate(:children, 'COUNT(*)', 'SUM(col)' => 'total').select('chil
                   ON arlj_aggregate_children."parent_id" = "parents"."id"
 ```
 
-`arlj_aggregate` currently uses a subquery to hide its aggregation. It's not the
-most efficient implementation but it does offer a much better chaining
+`left_joins_aggregate` currently uses a subquery to hide its aggregation. It is
+not the most efficient implementation but it does offer a much better chaining
 experience than using `group` at the top level.
 
-Arlj can also alias `arlj` and `arlj_aggregate` to `left_joins` and
-`left_joins_aggregate` respectively:
+If you prefer, you may also use `arlj` and `arlj_aggregate` instead of
+`left_joins` and `left_joins_aggregate` respectively. To prevent potential
+naming conflicts, please use `Arlj::Base`:
 
 ```ruby
 class Parent < ActiveRecord::Base
-  extend Arlj::LeftJoins
+  extend Arlj::Base
 end
-
-Parent.left_joins(:children).group('records.id').select('COUNT(children.id)')
-Parent.left_joins_aggregate(:children, 'COUNT(*)', 'SUM(col)' => 'total')
 ```
 
 ## TODO

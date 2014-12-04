@@ -3,13 +3,13 @@ require 'spec_helper'
 require 'arlj'
 require 'temping'
 
-RSpec.describe Arlj do
+RSpec.describe Arlj::Base do
   Temping.create :parent do
     with_columns do |t|
       t.string :name
     end
 
-    extend Arlj
+    extend Arlj::Base
 
     has_many :children
   end
