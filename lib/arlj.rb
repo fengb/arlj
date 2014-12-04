@@ -1,6 +1,9 @@
 require 'memoist'
 
 module Arlj
+  autoload :LeftJoins, 'arlj/left_joins'
+  autoload :VERSION,   'arlj/version'
+
   extend Memoist
 
   def arlj(assoc)
