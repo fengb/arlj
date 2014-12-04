@@ -3,28 +3,30 @@ require 'memoist'
 module Arlj
   extend Memoist
 
-  def left_joins(assoc)
+  def arlj(assoc)
     # Example snippet:
     #  LEFT JOIN [assoc]
     #         ON [assoc].source_id = source.id
 
     refl = reflect_on_association(assoc)
-    sources = left_joins_arel_sources(refl.klass.arel_table, refl.foreign_key)
+    sources = arlj_arel_sources(refl.klass.arel_table, refl.foreign_key)
     joins(sources)
   end
 
   # Example usage:
-  #   aggregate(other, 'count(*)', 'sum(col)' => target_name)
-  def aggregate(assoc, *args)
+  #   arlj_aggregate(other, 'count(*)', 'sum(col)' => target_name)
+  def arlj_aggregate(assoc, *args)
     # Example snippet:
     #  LEFT JOIN(SELECT source_id, [func]([column]) AS [target_name]
     #              FROM [assoc]
-    #             GROUP BY [assoc].source_id) aggregate_[assoc]
+    #             GROUP BY [assoc].source_id) arlj_aggregate_[assoc]
     #         ON [assoc].source_id = source.id
 
-    sources = aggregate_sources(assoc, *args)
+    sources = arlj_aggregate_sources(assoc, *args)
     joins(sources)
   end
+
+  private
 
   THUNK_PATTERN = /^([a-zA-Z]*)\((.*)\)$/
   AGGREGATE_FUNCTIONS = {
@@ -59,13 +61,13 @@ module Arlj
   end
 
   memoize \
-  def aggregate_sources(assoc, *args)
+  def arlj_aggregate_sources(assoc, *args)
     options = args.extract_options!
 
     refl = reflect_on_association(assoc)
     refl_arel = refl.klass.arel_table
 
-    join_name = "aggregate_#{refl.table_name}"
+    join_name = "arlj_aggregate_#{refl.table_name}"
 
     columns = [refl_arel[refl.foreign_key]]
     args.each do |thunk|
@@ -81,10 +83,10 @@ module Arlj
                 group(refl_arel[refl.foreign_key]).
                 as(join_name)
 
-    left_joins_arel_sources(subq_arel, refl.foreign_key)
+    arlj_arel_sources(subq_arel, refl.foreign_key)
   end
 
-  def left_joins_arel_sources(arel, foreign_key)
+  def arlj_arel_sources(arel, foreign_key)
     arel_join =
       arel_table.join(arel, Arel::Nodes::OuterJoin).
                    on(arel[foreign_key].eq(arel_table[self.primary_key]))
