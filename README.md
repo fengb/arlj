@@ -1,6 +1,6 @@
 # Arlj - ActiveRecord Left Join
 
-Make left joins feel like first-class citizens.
+Make left joins feel like first-class citizens in ActiveRecord.
 
 ## Installation
 
