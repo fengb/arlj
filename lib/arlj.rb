@@ -63,7 +63,6 @@ module Arlj
     arel[column].send(func).as(name)
   end
 
-  memoize \
   def arlj_aggregate_sources(assoc, *args)
     options = args.extract_options!
 
@@ -88,6 +87,7 @@ module Arlj
 
     arlj_arel_sources(subq_arel, refl.foreign_key)
   end
+  memoize :arlj_aggregate_sources
 
   def arlj_arel_sources(arel, foreign_key)
     arel_join =
