@@ -1,4 +1,4 @@
-# Arlj - ActiveRecord Left Join
+# Arlj - ActiveRecord Left Join [![Travis CI](https://travis-ci.org/fengb/arlj.svg?branch=master)](https://travis-ci.org/fengb/arlj)
 
 Make left joins feel like first-class citizens in ActiveRecord.
 
