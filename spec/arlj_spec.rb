@@ -31,27 +31,28 @@ RSpec.describe Arlj do
   describe '#aggregate' do
     specify 'COUNT(*)' do
       problems_count = Book.aggregate(:problems, 'count(*)').pluck('problems_count').first
-      expect(problems_count).to eq(@book.problems.size)
+      assert{ problems_count == @book.problems.size }
     end
 
     specify 'sum(answer)' do
       problems_sum_answer = Book.aggregate(:problems, 'SUM(answer)').pluck('problems_sum_answer').first
-      expect(problems_sum_answer).to eq(@book.problems.sum(:answer))
+      assert{ problems_sum_answer == @book.problems.sum(:answer) }
     end
 
     specify 'SUM(answer) => name' do
       sum = Book.aggregate(:problems, 'sum(answer)' => 'sum').pluck('sum').first
-      expect(sum).to eq(@book.problems.sum(:answer))
+      assert{ sum == @book.problems.sum(:answer) }
     end
 
-    specify 'FAKE(answer)' do
-      expect{Book.aggregate(:problems, 'FAKE(answer)')}.to raise_error
+    specify 'FAKE(answer) raises error' do
+      error = rescuing{ Book.aggregate(:problems, 'FAKE(answer)') }
+      assert{ error }
     end
 
     specify 'COUNT(*) => count, SUM(answer) => sum' do
       array = Book.aggregate(:problems, 'count(*)' => 'count', 'sum(answer)' => 'sum').pluck('count', 'sum').first
-      expect(array[0]).to eq(@book.problems.size)
-      expect(array[1]).to eq(@book.problems.sum(:answer))
+      assert{ array[0] == @book.problems.size }
+      assert{ array[1] == @book.problems.sum(:answer) }
     end
   end
 end
