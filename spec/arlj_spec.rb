@@ -4,55 +4,55 @@ require 'arlj'
 require 'temping'
 
 RSpec.describe Arlj do
-  Temping.create :problem do
-    with_columns do |t|
-      t.integer :book_id, references: nil
-      t.integer :answer
-    end
-  end
-
-  Temping.create :book do
+  Temping.create :parent do
     with_columns do |t|
       t.string :name
     end
 
     extend Arlj
 
-    has_many :problems
+    has_many :children
+  end
+
+  Temping.create :child do
+    with_columns do |t|
+      t.integer :parent_id
+      t.integer :col
+    end
   end
 
   before(:all) do
-    @book = Book.create(name: 'job')
+    @parent = Parent.create(name: 'job')
     (1..10).map do |n|
-      @book.problems.create(answer: n)
+      @parent.children.create(col: n)
     end
   end
 
   describe '#arlj_aggregate' do
     specify 'COUNT(*)' do
-      problems_count = Book.arlj_aggregate(:problems, 'count(*)').pluck('problems_count').first
-      assert{ problems_count == @book.problems.size }
+      children_count = Parent.arlj_aggregate(:children, 'count(*)').pluck('children_count').first
+      assert{ children_count == @parent.children.size }
     end
 
-    specify 'sum(answer)' do
-      problems_sum_answer = Book.arlj_aggregate(:problems, 'SUM(answer)').pluck('problems_sum_answer').first
-      assert{ problems_sum_answer == @book.problems.sum(:answer) }
+    specify 'sum(col)' do
+      children_sum_col = Parent.arlj_aggregate(:children, 'SUM(col)').pluck('children_sum_col').first
+      assert{ children_sum_col == @parent.children.sum(:col) }
     end
 
-    specify 'SUM(answer) => name' do
-      sum = Book.arlj_aggregate(:problems, 'sum(answer)' => 'sum').pluck('sum').first
-      assert{ sum == @book.problems.sum(:answer) }
+    specify 'SUM(col) => name' do
+      sum = Parent.arlj_aggregate(:children, 'sum(col)' => 'sum').pluck('sum').first
+      assert{ sum == @parent.children.sum(:col) }
     end
 
-    specify 'FAKE(answer) raises error' do
-      error = rescuing{ Book.arlj_aggregate(:problems, 'FAKE(answer)') }
+    specify 'FAKE(col) raises error' do
+      error = rescuing{ Parent.arlj_aggregate(:children, 'FAKE(col)') }
       assert{ error }
     end
 
-    specify 'COUNT(*) => count, SUM(answer) => sum' do
-      array = Book.arlj_aggregate(:problems, 'count(*)' => 'count', 'sum(answer)' => 'sum').pluck('count', 'sum').first
-      assert{ array[0] == @book.problems.size }
-      assert{ array[1] == @book.problems.sum(:answer) }
+    specify 'COUNT(*) => count, SUM(col) => sum' do
+      array = Parent.arlj_aggregate(:children, 'count(*)' => 'count', 'sum(col)' => 'sum').pluck('count', 'sum').first
+      assert{ array[0] == @parent.children.size }
+      assert{ array[1] == @parent.children.sum(:col) }
     end
   end
 end
