@@ -62,10 +62,6 @@ Parent.left_joins_aggregate(:children, 'COUNT(*)', 'SUM(col)' => 'total').select
                   ON arlj_aggregate_children."parent_id" = "parents"."id"
 ```
 
-`left_joins_aggregate` currently uses a subquery to hide its aggregation. It is
-not the most efficient implementation but it does offer a much better chaining
-experience than using `group` at the top level.
-
 If you prefer, you may also use `arlj` and `arlj_aggregate` instead of
 `left_joins` and `left_joins_aggregate` respectively. To prevent potential
 naming conflicts, please use `Arlj::Base`:
@@ -84,6 +80,15 @@ Arlj.memoize!
 ```
 
 This has not been proven to be faster.
+
+## Gotchas
+
+* `left_joins_aggregate` currently uses a subquery to hide its aggregation. It
+  is not the most efficient implementation but it does offer a much better
+  chaining experience than using `group` at the top level.
+
+* When `left_joins_aggregate` joins zero records, the aggregate column is NULL.
+  To operate correctly on these columns, please use `COALESCE(col, 0)`.
 
 ## TODO
 
