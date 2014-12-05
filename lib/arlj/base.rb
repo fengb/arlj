@@ -1,8 +1,10 @@
-require 'memoist'
-
 module Arlj
   module Base
-    extend Memoist
+    def self.memoize!
+      require 'memoist'
+      self.extend Memoist
+      self.memoize :arlj_arel_sources, :arlj_aggregate_sources
+    end
 
     def arlj(assoc)
       # Example snippet:
@@ -85,7 +87,6 @@ module Arlj
 
       arlj_arel_sources(subq_arel, refl.foreign_key)
     end
-    memoize :arlj_aggregate_sources
 
     def arlj_arel_sources(arel, foreign_key)
       arel_join =
