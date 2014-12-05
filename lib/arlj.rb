@@ -6,4 +6,8 @@ module Arlj
 
   alias_method :left_joins, :arlj
   alias_method :left_joins_aggregate, :arlj_aggregate
+
+  def self.memoize!
+    Arlj::Base.memoize!
+  end
 end

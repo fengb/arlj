@@ -3,7 +3,7 @@ module Arlj
     def self.memoize!
       require 'memoist'
       self.extend Memoist
-      self.memoize :arlj_arel_sources, :arlj_aggregate_sources
+      self.memoize :arlj_aggregate_sources
     end
 
     def arlj(assoc)

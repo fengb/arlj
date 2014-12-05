@@ -76,6 +76,15 @@ class Parent < ActiveRecord::Base
 end
 ```
 
+**Arlj** has an experimental flag that uses the **memoist** gem to memoize the
+generated join SQL:
+
+```ruby
+Arlj.memoize!
+```
+
+This has not been proven to be faster.
+
 ## TODO
 
 * Relations with conditions
