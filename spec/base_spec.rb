@@ -68,7 +68,7 @@ RSpec.describe Arlj::Base do
 
     specify 'COUNT(*) => count, SUM(age) => sum' do
       value = Parent.arlj_aggregate(:children, 'count(*)' => 'count', 'sum(age)' => 'sum').
-                     select('count', 'sum').
+                     select(['count', 'sum']).
                      first
       assert{ value.count == @parent.children.size }
       assert{ value.sum == @parent.children.sum(:age) }
