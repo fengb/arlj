@@ -41,7 +41,7 @@ module Arlj
       refl = reflect_on_association(assoc)
       refl_arel = refl.klass.arel_table
 
-      subq_values = {}
+      subq_ar = refl.klass.group(refl_arel[refl.foreign_key])
 
       columns = [refl_arel[refl.foreign_key]]
       args.each do |arg|
@@ -50,17 +50,14 @@ module Arlj
       options.each do |key, value|
         if directive?(key)
           columns << parse_directive(refl, assoc, refl_arel, key, value)
+        elsif key.to_s == 'where'
+          subq_ar = subq_ar.send(key, value)
         else
-          subq_values[key] = value
+          raise "'#{key.inspect} => #{value.inspect}' not recognized"
         end
       end
 
-      subq = refl.klass.group(refl_arel[refl.foreign_key])
-      subq_values.each do |key, value|
-        subq = subq.send(key, value)
-      end
-
-      subq_arel = subq.arel
+      subq_arel = subq_ar.arel
       subq_arel.projections.clear
       subq_arel = subq_arel.project(columns).
                     as("arlj_aggregate_#{refl.table_name}")

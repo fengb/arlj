@@ -45,26 +45,67 @@ puts Parent.left_joins(:children).group('records.id').select('COUNT(children.id)
     GROUP BY records.id
 ```
 
-`left_joins` is purposely low level to be extra chainable.
+`left_joins` is purposely low level for maximum control.
 
-Arlj also adds an aggregation method:
+Arlj has an aggregation method that is higher level and generally easier to use:
 
 ```ruby
-Parent.left_joins_aggregate(:children, 'COUNT(*)', 'SUM(col)' => 'total').select('children_count', 'total').to_sql
-=> SELECT children_count
-        , total
+Parent.left_joins_aggregate(:children, 'COUNT(*)').to_sql
+=> SELECT "parents".*
      FROM "parents"
      LEFT OUTER JOIN (SELECT "children"."parent_id"
                            , COUNT("children"."id") AS children_count
-                           , SUM("children"."col") AS total
                         FROM "children"
+                       GROUP BY "children"."parent_id") arlj_aggregate_children
+                  ON arlj_aggregate_children."parent_id" = "parents"."id"
+```
+
+Supported aggregation functions are `COUNT()`, `SUM()`, `AVG()`, `MIN()`, and `MAX()`.
+
+The aggregation column has a default name of `{table}_{function}_{column}` which
+is easily renamed:
+
+```ruby
+Parent.left_joins_aggregate(:children, 'SUM(age)' => 'ekkekkekkekkeptangya').to_sql
+=> SELECT "parents".*
+     FROM "parents"
+     LEFT OUTER JOIN (SELECT "children"."parent_id"
+                           , SUM("children"."age") AS ekkekkekkekkeptangya
+                        FROM "children"
+                       GROUP BY "children"."parent_id") arlj_aggregate_children
+                  ON arlj_aggregate_children."parent_id" = "parents"."id"
+```
+
+Since Arlj uses a sub-select, you can easily chain additional queries:
+
+```ruby
+Parent.left_joins_aggregate(:children, 'COUNT(*)').select('children_count').to_sql
+=> SELECT children_count
+     FROM "parents"
+     LEFT OUTER JOIN (SELECT "children"."parent_id"
+                           , COUNT("children"."id") AS children_count
+                        FROM "children"
+                       GROUP BY "children"."parent_id") arlj_aggregate_children
+                  ON arlj_aggregate_children."parent_id" = "parents"."id"
+```
+
+Arlj also supports some basic where clauses:
+
+```ruby
+Parent.left_joins_aggregate(:children, 'COUNT(*)', where: {age: 1..5}).to_sql
+=> SELECT "parents".*
+     FROM "parents"
+     LEFT OUTER JOIN (SELECT "children"."parent_id"
+                           , COUNT("children"."id") AS children_count
+                        FROM "children"
+                       WHERE ("children"."age" BETWEEN 1 AND 5)
                        GROUP BY "children"."parent_id") arlj_aggregate_children
                   ON arlj_aggregate_children."parent_id" = "parents"."id"
 ```
 
 If you prefer, you may also use `arlj` and `arlj_aggregate` instead of
 `left_joins` and `left_joins_aggregate` respectively. To prevent potential
-naming conflicts, please use `Arlj::Base`:
+naming conflicts, use `Arlj::Base` instead:
 
 ```ruby
 class Parent < ActiveRecord::Base
@@ -83,17 +124,16 @@ This has not been proven to be faster.
 
 ## Gotchas
 
-* `left_joins_aggregate` currently uses a subquery to hide its aggregation. It
-  is not the most efficient implementation but it does offer a much better
-  chaining experience than using `group` at the top level.
+* Since `left_joins_aggregate` uses a sub-select for its aggregation, it can
+  underperform a better optimized query.
 
 * When `left_joins_aggregate` joins zero records, the aggregate column is NULL.
   To operate correctly on these columns, please use `COALESCE(col, 0)`.
 
 ## TODO
 
-* Relations with conditions
-* `LEFT JOIN [...] ON`
+* `left_joins(nested: :relations)`
+* `left_joins_aggregate([...], merge: User.active)`
 * `has_and_belongs_to_many`
 * `has_many :through =>`
 
