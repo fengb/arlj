@@ -41,17 +41,23 @@ RSpec.describe Arlj::Base do
 
   describe '#arlj_aggregate' do
     specify 'COUNT(*)' do
-      children_count = Parent.arlj_aggregate(:children, 'count(*)').pluck('children_count').first
+      children_count = Parent.arlj_aggregate(:children, 'count(*)').
+                              pluck('children_count').
+                              first
       assert{ children_count == @parent.children.size }
     end
 
     specify 'sum(age)' do
-      children_sum_age = Parent.arlj_aggregate(:children, 'SUM(age)').pluck('children_sum_age').first
+      children_sum_age = Parent.arlj_aggregate(:children, 'SUM(age)').
+                                pluck('children_sum_age').
+                                first
       assert{ children_sum_age == @parent.children.sum(:age) }
     end
 
     specify 'SUM(age) => name' do
-      sum = Parent.arlj_aggregate(:children, 'sum(age)' => 'sum').pluck('sum').first
+      sum = Parent.arlj_aggregate(:children, 'sum(age)' => 'sum').
+                   pluck('sum').
+                   first
       assert{ sum == @parent.children.sum(:age) }
     end
 
@@ -61,24 +67,32 @@ RSpec.describe Arlj::Base do
     end
 
     specify 'COUNT(*) => count, SUM(age) => sum' do
-      array = Parent.arlj_aggregate(:children, 'count(*)' => 'count', 'sum(age)' => 'sum').pluck('count', 'sum').first
-      assert{ array[0] == @parent.children.size }
-      assert{ array[1] == @parent.children.sum(:age) }
+      value = Parent.arlj_aggregate(:children, 'count(*)' => 'count', 'sum(age)' => 'sum').
+                     select('count', 'sum').
+                     first
+      assert{ value.count == @parent.children.size }
+      assert{ value.sum == @parent.children.sum(:age) }
     end
 
     context 'where' do
       specify 'COUNT(*), where: "age > 4"' do
-        count = Parent.arlj_aggregate(:children, 'COUNT(*)', where: 'age > 4').pluck('children_count').first
+        count = Parent.arlj_aggregate(:children, 'COUNT(*)', where: 'age > 4').
+                       pluck('children_count').
+                       first
         assert{ count == @parent.children.where('age > 4').count }
       end
 
       specify 'SUM(age), where: {age: 1..4}' do
-        count = Parent.arlj_aggregate(:children, 'SUM(age)', where: {age: 1..4}).pluck('children_sum_age').first
+        count = Parent.arlj_aggregate(:children, 'SUM(age)', where: {age: 1..4}).
+                       pluck('children_sum_age').
+                       first
         assert{ count == @parent.children.where(age: 1..4).sum(:age) }
       end
 
       specify 'COUNT(age), where: ["age = ?", 1]' do
-        count = Parent.arlj_aggregate(:children, 'SUM(age)', where: ['age = ?', 8]).pluck('children_sum_age').first
+        count = Parent.arlj_aggregate(:children, 'SUM(age)', where: ['age = ?', 8]).
+                       pluck('children_sum_age').
+                       first
         assert{ count == 8 }
       end
     end

@@ -58,9 +58,8 @@ module Arlj
       end
 
       subq_arel = subq_ar.arel
-      subq_arel.projections.clear
-      subq_arel = subq_arel.project(columns).
-                    as("arlj_aggregate_#{refl.table_name}")
+      subq_arel.projections = columns
+      subq_arel = subq_arel.as("arlj_aggregate_#{refl.table_name}")
 
       arlj_left_join_arel(subq_arel, refl.foreign_key)
     end
