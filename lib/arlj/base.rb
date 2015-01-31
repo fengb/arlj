@@ -41,21 +41,29 @@ module Arlj
       refl = reflect_on_association(assoc)
       refl_arel = refl.klass.arel_table
 
-      join_name = "arlj_aggregate_#{refl.table_name}"
+      subq_values = {}
 
       columns = [refl_arel[refl.foreign_key]]
-      args.each do |thunk|
-        columns << parse_thunk(refl, assoc, refl_arel, thunk)
+      args.each do |arg|
+        columns << parse_directive(refl, assoc, refl_arel, arg)
       end
-      options.each do |thunk, name|
-        columns << parse_thunk(refl, assoc, refl_arel, thunk, name)
+      options.each do |key, value|
+        if directive?(key)
+          columns << parse_directive(refl, assoc, refl_arel, key, value)
+        else
+          subq_values[key] = value
+        end
       end
 
-      subq_arel =
-        refl_arel.project(columns).
-                  from(refl_arel).
-                  group(refl_arel[refl.foreign_key]).
-                  as(join_name)
+      subq = refl.klass.group(refl_arel[refl.foreign_key])
+      subq_values.each do |key, value|
+        subq = subq.send(key, value)
+      end
+
+      subq_arel = subq.arel
+      subq_arel.projections.clear
+      subq_arel = subq_arel.project(columns).
+                    as("arlj_aggregate_#{refl.table_name}")
 
       arlj_left_join_arel(subq_arel, refl.foreign_key)
     end
@@ -66,7 +74,7 @@ module Arlj
 
     private
 
-    THUNK_PATTERN = /^([a-zA-Z]*)\((.*)\)$/
+    DIRECTIVE_PATTERN = /^([a-zA-Z]*)\((.*)\)$/
     AGGREGATE_FUNCTIONS = {
       'sum'     => 'sum',
       'average' => 'average',
@@ -77,10 +85,14 @@ module Arlj
       'min'     => 'minimum',
       'count'   => 'count',
     }.freeze
-    def parse_thunk(refl, assoc, arel, thunk, name=nil)
-      matchdata = THUNK_PATTERN.match(thunk)
+    def directive?(check)
+      DIRECTIVE_PATTERN =~ check
+    end
+
+    def parse_directive(refl, assoc, arel, directive, name=nil)
+      matchdata = DIRECTIVE_PATTERN.match(directive)
       if matchdata.nil?
-        raise "'#{thunk}' not parsable - must be of format 'func(column)'"
+        raise "'#{directive}' not parsable - must be of format 'func(column)'"
       end
 
       func = AGGREGATE_FUNCTIONS[matchdata[1].downcase]
@@ -96,6 +108,10 @@ module Arlj
         name ||= "#{assoc}_#{func}_#{column}"
       end
       arel[column].send(func).as(name)
+    end
+
+    def arel_node(value)
+      Arel::Nodes::SqlLiteral.new(value)
     end
 
     def arlj_left_join_arel(arel, foreign_key)

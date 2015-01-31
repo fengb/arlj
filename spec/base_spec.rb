@@ -65,5 +65,22 @@ RSpec.describe Arlj::Base do
       assert{ array[0] == @parent.children.size }
       assert{ array[1] == @parent.children.sum(:age) }
     end
+
+    context 'where' do
+      specify 'COUNT(*), where: "age > 4"' do
+        count = Parent.arlj_aggregate(:children, 'COUNT(*)', where: 'age > 4').pluck('children_count').first
+        assert{ count == @parent.children.where('age > 4').count }
+      end
+
+      specify 'SUM(age), where: {age: 1..4}' do
+        count = Parent.arlj_aggregate(:children, 'SUM(age)', where: {age: 1..4}).pluck('children_sum_age').first
+        assert{ count == @parent.children.where(age: 1..4).sum(:age) }
+      end
+
+      specify 'COUNT(age), where: ["age = ?", 1]' do
+        count = Parent.arlj_aggregate(:children, 'SUM(age)', where: ['age = ?', 8]).pluck('children_sum_age').first
+        assert{ count == 8 }
+      end
+    end
   end
 end
