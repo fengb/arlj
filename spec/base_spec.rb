@@ -17,14 +17,14 @@ RSpec.describe Arlj::Base do
   Temping.create :child do
     with_columns do |t|
       t.integer :parent_id
-      t.integer :col
+      t.integer :age
     end
   end
 
   before(:all) do
     @parent = Parent.create(name: 'John')
     (1..10).each do |n|
-      @parent.children.create(col: n)
+      @parent.children.create(age: n)
     end
 
     @parent_no_child = Parent.create(name: 'Jane')
@@ -45,25 +45,25 @@ RSpec.describe Arlj::Base do
       assert{ children_count == @parent.children.size }
     end
 
-    specify 'sum(col)' do
-      children_sum_col = Parent.arlj_aggregate(:children, 'SUM(col)').pluck('children_sum_col').first
-      assert{ children_sum_col == @parent.children.sum(:col) }
+    specify 'sum(age)' do
+      children_sum_age = Parent.arlj_aggregate(:children, 'SUM(age)').pluck('children_sum_age').first
+      assert{ children_sum_age == @parent.children.sum(:age) }
     end
 
-    specify 'SUM(col) => name' do
-      sum = Parent.arlj_aggregate(:children, 'sum(col)' => 'sum').pluck('sum').first
-      assert{ sum == @parent.children.sum(:col) }
+    specify 'SUM(age) => name' do
+      sum = Parent.arlj_aggregate(:children, 'sum(age)' => 'sum').pluck('sum').first
+      assert{ sum == @parent.children.sum(:age) }
     end
 
-    specify 'FAKE(col) raises error' do
-      error = rescuing{ Parent.arlj_aggregate(:children, 'FAKE(col)') }
+    specify 'FAKE(age) raises error' do
+      error = rescuing{ Parent.arlj_aggregate(:children, 'FAKE(age)') }
       assert{ error }
     end
 
-    specify 'COUNT(*) => count, SUM(col) => sum' do
-      array = Parent.arlj_aggregate(:children, 'count(*)' => 'count', 'sum(col)' => 'sum').pluck('count', 'sum').first
+    specify 'COUNT(*) => count, SUM(age) => sum' do
+      array = Parent.arlj_aggregate(:children, 'count(*)' => 'count', 'sum(age)' => 'sum').pluck('count', 'sum').first
       assert{ array[0] == @parent.children.size }
-      assert{ array[1] == @parent.children.sum(:col) }
+      assert{ array[1] == @parent.children.sum(:age) }
     end
   end
 end
