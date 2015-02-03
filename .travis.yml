@@ -1,18 +1,24 @@
 language: ruby
 
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1.5
-  - 2.2.0
+  - '1.9.3'
+  - '2.0.0'
+  - '2.1.5'
+  - '2.2.0'
+  - 'ruby-head'
 
 env:
-  - RAILS_VERSION=3.2.21
-  - RAILS_VERSION=4.0.13
-  - RAILS_VERSION=4.1.9
-  - RAILS_VERSION=4.2.0
+  - 'RAILS_VERSION=3.2.21'
+  - 'RAILS_VERSION=4.0.13'
+  - 'RAILS_VERSION=4.1.9'
+  - 'RAILS_VERSION=4.2.0'
 
 matrix:
+  fast_finish: true
+  allow_failures:
+    - rvm: 'ruby-head'
   exclude:
-    - rvm: 2.2.0
-      env: RAILS_VERSION=3.2.21
+    - rvm: '2.2.0'
+      env: 'RAILS_VERSION=3.2.21'
+    - rvm: 'ruby-head'
+      env: 'RAILS_VERSION=3.2.21'
