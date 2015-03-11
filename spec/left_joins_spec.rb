@@ -15,7 +15,7 @@ RSpec.describe Arlj, 'left_joins' do
   end
 
   specify '#left_joins_aggregate does arlj_aggregate stuff' do
-    children_count = LjParent.left_joins_aggregate(:children, 'count(*)').
+    children_count = LjParent.left_joins_aggregate(children: Child.select('COUNT(*) AS children_count')).
                               pluck('children_count').
                               first
     assert{ children_count == 10 }
