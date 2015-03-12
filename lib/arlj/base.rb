@@ -1,9 +1,7 @@
 module Arlj
   module Base
     def self.memoize!
-      require 'memoist'
-      self.extend Memoist
-      self.memoize :arlj_sql, :arlj_aggregate_sql
+      $stderr.puts 'Arlj::Base.memoize! is deprecated and no longer works'
     end
 
     def arlj(assoc)

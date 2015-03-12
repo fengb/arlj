@@ -10,6 +10,6 @@ module Arlj
   alias_method :left_joins_aggregate_arel, :arlj_aggregate_arel
 
   def self.memoize!
-    Arlj::Base.memoize!
+    $stderr.puts 'Arlj::Base.memoize! is deprecated and no longer works'
   end
 end
