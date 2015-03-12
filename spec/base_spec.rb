@@ -41,24 +41,31 @@ RSpec.describe Arlj::Base do
 
   describe '#arlj_aggregate' do
     specify 'Child.select("COUNT(*)")' do
-      children_count = Parent.arlj_aggregate(children: Child.select('COUNT(*) AS children_count')).
+      children_count = Parent.arlj_aggregate(Child.select('COUNT(*) AS children_count')).
                               pluck('children_count').
                               first
       assert{ children_count == @parent.children.size }
     end
 
     specify 'Child.select("SUM(age)")' do
-      sum_age = Parent.arlj_aggregate(children: Child.select('SUM(age) AS sum_age')).
+      sum_age = Parent.arlj_aggregate(Child.select('SUM(age) AS sum_age')).
                        pluck('sum_age').
                        first
       assert{ sum_age == @parent.children.sum(:age) }
     end
 
     specify 'Child.where("age > 4").select("COUNT(*)")' do
-      count = Parent.arlj_aggregate(children: Child.where('age > 4').select('COUNT(*) as children_count')).
+      count = Parent.arlj_aggregate(Child.where('age > 4').select('COUNT(*) as children_count')).
                      pluck('children_count').
                      first
       assert{ count == @parent.children.where('age > 4').count }
+    end
+
+    specify 'children: Child.select("COUNT(*)")' do
+      count = Parent.arlj_aggregate(children: Child.select('COUNT(*) as children_count')).
+                     pluck('children_count').
+                     first
+      assert{ count == @parent.children.count }
     end
   end
 end
